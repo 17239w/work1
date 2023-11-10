@@ -22,17 +22,18 @@ CREATE TABLE "tests" (
 
 CREATE TABLE "results" (
   "id" bigserial PRIMARY KEY,
+  "test_id" bigint NOT NULL,
+  "devices_id" bigint NOT NULL,
   "voltage" bigint NOT NULL,
   "point_number" bigint NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT 'now()',
-  "test_id" bigint NOT NULL,
   "temperature" bigint NOT NULL,
   "humidity" bigint NOT NULL
 );
 
 CREATE INDEX ON "tests" ("devices_id");
 
-CREATE INDEX ON "results" ("test_id");
+CREATE INDEX ON "results" ("devices_id");
 
 COMMENT ON COLUMN "tests"."percentage" IS 'must be positive';
 
@@ -44,4 +45,4 @@ COMMENT ON COLUMN "tests"."test_data" IS 'must be positive';
 
 ALTER TABLE "tests" ADD FOREIGN KEY ("devices_id") REFERENCES "devices" ("id");
 
-ALTER TABLE "results" ADD FOREIGN KEY ("test_id") REFERENCES "tests" ("id");
+ALTER TABLE "results" ADD FOREIGN KEY ("devices_id") REFERENCES "devices" ("id");
