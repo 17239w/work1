@@ -16,9 +16,10 @@ INSERT INTO devices(
     device_manufacturer,
     device_origin,
     production_date,
+    testing_date,
     device_model
 )VALUES(
-    $1,$2,$3,$4,$5
+    $1,$2,$3,$4,$5,$6
 ) RETURNING id, device_name, device_manufacturer, device_origin, production_date, testing_date, device_model
 `
 
@@ -27,6 +28,7 @@ type CreateDeviceParams struct {
 	DeviceManufacturer string    `json:"device_manufacturer"`
 	DeviceOrigin       string    `json:"device_origin"`
 	ProductionDate     time.Time `json:"production_date"`
+	TestingDate        time.Time `json:"testing_date"`
 	DeviceModel        string    `json:"device_model"`
 }
 
@@ -36,6 +38,7 @@ func (q *Queries) CreateDevice(ctx context.Context, arg CreateDeviceParams) (Dev
 		arg.DeviceManufacturer,
 		arg.DeviceOrigin,
 		arg.ProductionDate,
+		arg.TestingDate,
 		arg.DeviceModel,
 	)
 	var i Device
@@ -51,13 +54,13 @@ func (q *Queries) CreateDevice(ctx context.Context, arg CreateDeviceParams) (Dev
 	return i, err
 }
 
-const listDevices = `-- name: ListDevices :one
+const listDevice = `-- name: ListDevice :one
 SELECT id, device_name, device_manufacturer, device_origin, production_date, testing_date, device_model FROM devices
 WHERE id=$1 LIMIT 1
 `
 
-func (q *Queries) ListDevices(ctx context.Context, id int64) (Device, error) {
-	row := q.db.QueryRowContext(ctx, listDevices, id)
+func (q *Queries) ListDevice(ctx context.Context, id int64) (Device, error) {
+	row := q.db.QueryRowContext(ctx, listDevice, id)
 	var i Device
 	err := row.Scan(
 		&i.ID,
