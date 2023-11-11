@@ -13,6 +13,7 @@ type Querier interface {
 	CreateResult(ctx context.Context, arg CreateResultParams) (Result, error)
 	CreateTest(ctx context.Context, arg CreateTestParams) (Test, error)
 	ListDevice(ctx context.Context, id int64) (Device, error)
+	ListRecords(ctx context.Context, arg ListRecordsParams) ([]ListRecordsRow, error)
 	ListResults(ctx context.Context, arg ListResultsParams) ([]Result, error)
 	ListTests(ctx context.Context, arg ListTestsParams) ([]Test, error)
 }

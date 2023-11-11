@@ -18,17 +18,6 @@ type createTestRequest struct {
 	TestData   int64  `json:"test_data" binding:"required"`
 }
 
-type createTestResponse struct {
-	ID         int64  `json:"id"`
-	DevicesID  int64  `json:"devices_id" binding:"required,min=1"`
-	TestName   string `json:"test_name" binding:"required"`
-	Gear       int64  `json:"gear" binding:"required,gt=0"`
-	Percentage int64  `json:"percentage" binding:"required,gt=0"`
-	LowerLimit int64  `json:"lower_limit" binding:"required,gt=0"`
-	UpperLimit int64  `json:"upper_limit" binding:"required,gt=0"`
-	TestData   int64  `json:"test_data" binding:"required,gt=0"`
-}
-
 func (server *Server) createTest(ctx *gin.Context) {
 	var req createTestRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -60,19 +49,28 @@ func (server *Server) createTest(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, test)
 }
 
-type getTestRequest struct {
-	DevicesID int64 `uri:"id" binding:"required,min=1"`
+type listTestRequest struct {
+	DeviceID int64 `form:"devices_id" binding:"required"`
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
-type getTestResponse struct {
-	TestName   string `json:"test_name" binding:"required"`
-	Gear       int64  `json:"gear" binding:"required,gt=0"`
-	Percentage int64  `json:"percentage" binding:"required,gt=0"`
-	LowerLimit int64  `json:"lower_limit" binding:"required,gt=0"`
-	UpperLimit int64  `json:"upper_limit" binding:"required,gt=0"`
-	TestData   int64  `json:"test_data" binding:"required,gt=0"`
-}
-
-func (server *Server) getTest(ctx *gin.Context) {
-
+func (server *Server) listTests(ctx *gin.Context) {
+	var req listTestRequest
+	//id绑定在uri中
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	arg := db.ListTestsParams{
+		DevicesID: req.DeviceID,
+		Limit:     req.PageSize,
+		Offset:    (req.PageID - 1) * req.PageSize,
+	}
+	tests, err := server.store.ListTests(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, tests)
 }

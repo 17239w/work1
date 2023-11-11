@@ -73,3 +73,94 @@ func (q *Queries) ListDevice(ctx context.Context, id int64) (Device, error) {
 	)
 	return i, err
 }
+
+const listRecords = `-- name: ListRecords :many
+SELECT devices.id, device_name, device_manufacturer, device_origin, production_date, testing_date, device_model, results.id, test_id, results.devices_id, voltage, point_number, results.created_at, temperature, humidity, tests.id, test_name, tests.devices_id, tests.created_at, gear, percentage, lower_limit, upper_limit, test_data
+FROM devices
+JOIN results ON devices.id = results.devices_id
+JOIN tests ON tests.id = tests.devices_id
+WHERE devices.id = $1
+LIMIT $2
+OFFSET $3
+`
+
+type ListRecordsParams struct {
+	ID     int64 `json:"id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+type ListRecordsRow struct {
+	ID                 int64     `json:"id"`
+	DeviceName         string    `json:"device_name"`
+	DeviceManufacturer string    `json:"device_manufacturer"`
+	DeviceOrigin       string    `json:"device_origin"`
+	ProductionDate     time.Time `json:"production_date"`
+	TestingDate        time.Time `json:"testing_date"`
+	DeviceModel        string    `json:"device_model"`
+	ID_2               int64     `json:"id_2"`
+	TestID             int64     `json:"test_id"`
+	DevicesID          int64     `json:"devices_id"`
+	Voltage            int64     `json:"voltage"`
+	PointNumber        int64     `json:"point_number"`
+	CreatedAt          time.Time `json:"created_at"`
+	Temperature        int64     `json:"temperature"`
+	Humidity           int64     `json:"humidity"`
+	ID_3               int64     `json:"id_3"`
+	TestName           string    `json:"test_name"`
+	DevicesID_2        int64     `json:"devices_id_2"`
+	CreatedAt_2        time.Time `json:"created_at_2"`
+	Gear               int64     `json:"gear"`
+	Percentage         int64     `json:"percentage"`
+	LowerLimit         int64     `json:"lower_limit"`
+	UpperLimit         int64     `json:"upper_limit"`
+	TestData           int64     `json:"test_data"`
+}
+
+func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]ListRecordsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listRecords, arg.ID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListRecordsRow{}
+	for rows.Next() {
+		var i ListRecordsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.DeviceName,
+			&i.DeviceManufacturer,
+			&i.DeviceOrigin,
+			&i.ProductionDate,
+			&i.TestingDate,
+			&i.DeviceModel,
+			&i.ID_2,
+			&i.TestID,
+			&i.DevicesID,
+			&i.Voltage,
+			&i.PointNumber,
+			&i.CreatedAt,
+			&i.Temperature,
+			&i.Humidity,
+			&i.ID_3,
+			&i.TestName,
+			&i.DevicesID_2,
+			&i.CreatedAt_2,
+			&i.Gear,
+			&i.Percentage,
+			&i.LowerLimit,
+			&i.UpperLimit,
+			&i.TestData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

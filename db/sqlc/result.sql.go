@@ -11,29 +11,32 @@ import (
 
 const createResult = `-- name: CreateResult :one
 INSERT INTO results(
+    test_id,
+    devices_id,
     voltage,
     point_number,
-    test_id,
     temperature,
     humidity
 )VALUES(
-    $1,$2,$3,$4,$5
+    $1,$2,$3,$4,$5,$6
 )RETURNING id, test_id, devices_id, voltage, point_number, created_at, temperature, humidity
 `
 
 type CreateResultParams struct {
+	TestID      int64 `json:"test_id"`
+	DevicesID   int64 `json:"devices_id"`
 	Voltage     int64 `json:"voltage"`
 	PointNumber int64 `json:"point_number"`
-	TestID      int64 `json:"test_id"`
 	Temperature int64 `json:"temperature"`
 	Humidity    int64 `json:"humidity"`
 }
 
 func (q *Queries) CreateResult(ctx context.Context, arg CreateResultParams) (Result, error) {
 	row := q.db.QueryRowContext(ctx, createResult,
+		arg.TestID,
+		arg.DevicesID,
 		arg.Voltage,
 		arg.PointNumber,
-		arg.TestID,
 		arg.Temperature,
 		arg.Humidity,
 	)

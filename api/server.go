@@ -29,6 +29,11 @@ func (server *Server) setupRouter() {
 
 	router.POST("/devices", server.createDevice)
 	router.GET("/devices/:id", server.getDevice)
+	router.POST("/tests", server.createTest)
+	router.GET("/tests", server.listTests)
+	router.POST("/results", server.createResult)
+	router.GET("/results", server.listResults)
+	router.GET("/records", server.listRecords)
 	server.router = router
 }
 
