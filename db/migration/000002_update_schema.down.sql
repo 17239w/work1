@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS "results" DROP CONSTRAINT IF EXISTS "devices_id_test_id";

@@ -25,11 +25,12 @@ CREATE TABLE "results" (
   "test_id" bigint NOT NULL,
   "devices_id" bigint NOT NULL,
   "voltage" bigint NOT NULL,
-  "point_number" bigint NOT NULL,
+  "point_number" bigint UNIQUE NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT 'now()',
   "temperature" bigint NOT NULL,
   "humidity" bigint NOT NULL
 );
+
 
 CREATE INDEX ON "tests" ("devices_id");
 

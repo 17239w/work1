@@ -19,28 +19,6 @@ type createDeviceRequest struct {
 	DeviceModel        string    `json:"device_model" binding:"required"`
 }
 
-type deviceResponse struct {
-	ID                 int64     `json:"id"`
-	DeviceName         string    `json:"device_name"`
-	DeviceManufacturer string    `json:"device_manufacturer"`
-	DeviceOrigin       string    `json:"device_origin"`
-	ProductionDate     time.Time `json:"production_date"`
-	TestingDate        time.Time `json:"testing_date"`
-	DeviceModel        string    `json:"device_model"`
-}
-
-func newDeviceResponse(device db.Device) deviceResponse {
-	return deviceResponse{
-		ID:                 device.ID,
-		DeviceName:         device.DeviceName,
-		DeviceManufacturer: device.DeviceManufacturer,
-		DeviceOrigin:       device.DeviceOrigin,
-		ProductionDate:     device.ProductionDate,
-		TestingDate:        device.TestingDate,
-		DeviceModel:        device.DeviceModel,
-	}
-}
-
 func (server *Server) createDevice(ctx *gin.Context) {
 	var req createDeviceRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -64,8 +42,7 @@ func (server *Server) createDevice(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	rep := newDeviceResponse(device)
-	ctx.JSON(http.StatusOK, rep)
+	ctx.JSON(http.StatusOK, device)
 }
 
 type getDeviceRequest struct {
@@ -94,8 +71,6 @@ func (server *Server) getDevice(ctx *gin.Context) {
 
 type listRecordsRequest struct {
 	DeviceID int64 `form:"devices_id" binding:"required,min=1"`
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=1,max=10"`
 }
 
 func (server *Server) listRecords(ctx *gin.Context) {
@@ -105,12 +80,7 @@ func (server *Server) listRecords(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	arg := db.ListRecordsParams{
-		ID:     req.DeviceID,
-		Limit:  req.PageID,
-		Offset: req.PageSize,
-	}
-	records, err := server.store.ListRecords(ctx, arg)
+	records, err := server.store.ListRecords(ctx, req.DeviceID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

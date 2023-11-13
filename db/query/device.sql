@@ -17,8 +17,8 @@ WHERE id=$1 LIMIT 1;
 -- name: ListRecords :many
 SELECT *
 FROM devices
-JOIN results ON devices.id = results.devices_id
-JOIN tests ON tests.id = tests.devices_id
-WHERE devices.id = $1
-LIMIT $2
-OFFSET $3;
+JOIN tests ON devices.id = tests.devices_id
+JOIN results ON devices.id = results.devices_id 
+WHERE devices.id = $1 AND results.id =  tests.id ;
+-- LIMIT $2
+-- OFFSET $3;

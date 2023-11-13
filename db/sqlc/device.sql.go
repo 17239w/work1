@@ -75,20 +75,12 @@ func (q *Queries) ListDevice(ctx context.Context, id int64) (Device, error) {
 }
 
 const listRecords = `-- name: ListRecords :many
-SELECT devices.id, device_name, device_manufacturer, device_origin, production_date, testing_date, device_model, results.id, test_id, results.devices_id, voltage, point_number, results.created_at, temperature, humidity, tests.id, test_name, tests.devices_id, tests.created_at, gear, percentage, lower_limit, upper_limit, test_data
+SELECT devices.id, device_name, device_manufacturer, device_origin, production_date, testing_date, device_model, tests.id, test_name, tests.devices_id, tests.created_at, gear, percentage, lower_limit, upper_limit, test_data, results.id, test_id, results.devices_id, voltage, point_number, results.created_at, temperature, humidity
 FROM devices
-JOIN results ON devices.id = results.devices_id
-JOIN tests ON tests.id = tests.devices_id
-WHERE devices.id = $1
-LIMIT $2
-OFFSET $3
+JOIN tests ON devices.id = tests.devices_id
+JOIN results ON devices.id = results.devices_id 
+WHERE devices.id = $1 AND results.id =  tests.id
 `
-
-type ListRecordsParams struct {
-	ID     int64 `json:"id"`
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
 
 type ListRecordsRow struct {
 	ID                 int64     `json:"id"`
@@ -99,26 +91,26 @@ type ListRecordsRow struct {
 	TestingDate        time.Time `json:"testing_date"`
 	DeviceModel        string    `json:"device_model"`
 	ID_2               int64     `json:"id_2"`
-	TestID             int64     `json:"test_id"`
-	DevicesID          int64     `json:"devices_id"`
-	Voltage            int64     `json:"voltage"`
-	PointNumber        int64     `json:"point_number"`
-	CreatedAt          time.Time `json:"created_at"`
-	Temperature        int64     `json:"temperature"`
-	Humidity           int64     `json:"humidity"`
-	ID_3               int64     `json:"id_3"`
 	TestName           string    `json:"test_name"`
-	DevicesID_2        int64     `json:"devices_id_2"`
-	CreatedAt_2        time.Time `json:"created_at_2"`
+	DevicesID          int64     `json:"devices_id"`
+	CreatedAt          time.Time `json:"created_at"`
 	Gear               int64     `json:"gear"`
 	Percentage         int64     `json:"percentage"`
 	LowerLimit         int64     `json:"lower_limit"`
 	UpperLimit         int64     `json:"upper_limit"`
 	TestData           int64     `json:"test_data"`
+	ID_3               int64     `json:"id_3"`
+	TestID             int64     `json:"test_id"`
+	DevicesID_2        int64     `json:"devices_id_2"`
+	Voltage            int64     `json:"voltage"`
+	PointNumber        int64     `json:"point_number"`
+	CreatedAt_2        time.Time `json:"created_at_2"`
+	Temperature        int64     `json:"temperature"`
+	Humidity           int64     `json:"humidity"`
 }
 
-func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]ListRecordsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listRecords, arg.ID, arg.Limit, arg.Offset)
+func (q *Queries) ListRecords(ctx context.Context, id int64) ([]ListRecordsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listRecords, id)
 	if err != nil {
 		return nil, err
 	}
@@ -135,22 +127,22 @@ func (q *Queries) ListRecords(ctx context.Context, arg ListRecordsParams) ([]Lis
 			&i.TestingDate,
 			&i.DeviceModel,
 			&i.ID_2,
-			&i.TestID,
-			&i.DevicesID,
-			&i.Voltage,
-			&i.PointNumber,
-			&i.CreatedAt,
-			&i.Temperature,
-			&i.Humidity,
-			&i.ID_3,
 			&i.TestName,
-			&i.DevicesID_2,
-			&i.CreatedAt_2,
+			&i.DevicesID,
+			&i.CreatedAt,
 			&i.Gear,
 			&i.Percentage,
 			&i.LowerLimit,
 			&i.UpperLimit,
 			&i.TestData,
+			&i.ID_3,
+			&i.TestID,
+			&i.DevicesID_2,
+			&i.Voltage,
+			&i.PointNumber,
+			&i.CreatedAt_2,
+			&i.Temperature,
+			&i.Humidity,
 		); err != nil {
 			return nil, err
 		}
